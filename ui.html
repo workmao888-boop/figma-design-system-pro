@@ -663,13 +663,21 @@
           const response = await fetch(url, { ...options, signal: controller.signal });
           clearTimeout(id);
           if (!response.ok) {
+            let errorMsg = `[HTTP ${response.status}]`;
+            try {
+              const errData = await response.json();
+              if (errData && errData.error && errData.error.message) {
+                errorMsg = `[HTTP ${response.status}] ${errData.error.message}`;
+              }
+            } catch (e) { } // Ignore JSON parse errors for error responses
+            
             if (response.status === 429 || response.status >= 500) {
-              if (i === retries - 1) throw new Error(`HTTP ${response.status}`);
+              if (i === retries - 1) throw new Error(errorMsg);
               const delay = Math.pow(2, i) * 1000;
               await new Promise(r => setTimeout(r, delay));
               continue;
             }
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(errorMsg);
           }
           return await response.json();
         } catch (err) {
@@ -684,23 +692,32 @@
     }
 
     async function fetchWithModelFallback(key, options) {
-      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+      // 升級至 2026 年最新模型架構 (Gemini 3.x 系列)
+      const models = [
+        'gemini-2.5-flash', 'gemini-2.5-pro',
+        'gemini-2.0-flash-exp', 'gemini-2.0-flash',
+        'gemini-1.5-pro-002', 'gemini-1.5-pro-latest', 'gemini-1.5-pro',
+        'gemini-1.5-flash-002', 'gemini-1.5-flash-latest', 'gemini-1.5-flash',
+        'gemini-1.5-flash-8b', 'gemini-pro'
+      ];
       let lastError;
+      let failedModels = [];
       for (const model of models) {
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-          return await fetchWithRetry(url, options, 1, 45000); // 每個模型嘗試1次，45秒超時
+          return await fetchWithRetry(url, options, 3, 45000); // 每個模型嘗試3次，解決突發的 503 過載
         } catch (err) {
           lastError = err;
+          failedModels.push(`${model}(${err.message})`);
           console.warn(`${model} 失敗:`, err.message, "正在嘗試降級備援...");
           const msg = err.message || '';
-          const isRecoverable = msg.includes('503') || msg.includes('429') || msg.includes('超時') || msg.includes('404');
+          const isRecoverable = msg.includes('[HTTP 503]') || msg.includes('[HTTP 429]') || msg.includes('超時') || msg.includes('[HTTP 404]') || msg.includes('503') || msg.includes('429');
           if (!isRecoverable) {
             throw err; // 若非伺服器過載、超時或找不到模型，直接拋出致命錯誤
           }
         }
       }
-      throw lastError;
+      throw new Error(`所有模型皆請求失敗：${failedModels.join(', ')}。請確認 API Key 是否正確，或嘗試更換網路環境。`);
     }
 
     function normalizeAIResponse(rawColors) {
