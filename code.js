@@ -506,11 +506,18 @@ figma.ui.onmessage = async function (msg) {
 
         if (msg.type === "FORCE_APPLY_COLOR") {
           if (targetProp === 'fills') {
-            if (node.type === 'TEXT') applyFill = true;
-            else if ('fills' in node && Array.isArray(node.fills) && node.fills.some(f => f.visible !== false && f.type !== 'IMAGE')) applyFill = true;
+            if (node.type === 'TEXT' || node.type === 'VECTOR' || node.type === 'BOOLEAN_OPERATION') applyFill = true; // 強制對文字與向量圖形上色
+            else if ('fills' in node) {
+              if (node.fills === figma.mixed) applyFill = true; // 支援複雜的 SVG 組合路徑
+              else if (Array.isArray(node.fills) && node.fills.some(f => f.visible !== false && f.type !== 'IMAGE')) applyFill = true;
+            }
           }
           if (targetProp === 'strokes') {
-            if ('strokes' in node && Array.isArray(node.strokes) && node.strokes.some(s => s.visible !== false)) applyStroke = true;
+            if (node.type === 'VECTOR' || node.type === 'BOOLEAN_OPERATION' || node.type === 'LINE') applyStroke = true;
+            else if ('strokes' in node) {
+              if (node.strokes === figma.mixed) applyStroke = true;
+              else if (Array.isArray(node.strokes) && node.strokes.some(s => s.visible !== false)) applyStroke = true;
+            }
           }
         } else {
           if (role === 'border' || role === 'divider') {
