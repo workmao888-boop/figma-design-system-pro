@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 12px;
+      margin: 0;
+      box-sizing: border-box;
+      font-size: 11px;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      padding: 8px 2px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+      font-size: 12px;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 20px;
+      padding-right: 4px;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    label {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      display: block;
+      font-weight: 700;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .main-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid #334155;
+      padding: 10px;
+      border-radius: 6px;
+      color: white;
+      margin-bottom: 10px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .main-input:focus {
+      border-color: var(--accent);
+    }
+
+    .ai-btn {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.2s;
+      margin-top: auto;
+    }
+
+    .ai-btn:hover {
+      background: #7dd3fc;
+    }
+
+    .ai-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 緊湊版 24 色卡片 */
+    .color-card {
+      background: var(--surface);
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed #334155;
+    }
+
+    .role-title {
+      font-weight: bold;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+
+    .type-toggle {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      font-size: 9px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .type-toggle.active {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+      font-weight: bold;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .color-circle {
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid #475569;
+      cursor: pointer;
+      padding: 0;
+      background: transparent;
+    }
+
+    .color-circle::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-circle::-webkit-color-swatch {
+      border: none;
+      border-radius: 3px;
+    }
+
+    .hex-input {
+      flex: 0 0 65px;
+      width: 65px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: white;
+      padding: 4px;
+      border-radius: 4px;
+      text-align: center;
+      font-family: monospace;
+      font-size: 10px;
+      margin-left: 6px;
+      outline: none;
+    }
+
+    .hex-input:focus {
+      border-color: var(--accent);
+    }
+
+    .alpha-input {
+      flex: 0 0 40px;
+      width: 40px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: white;
+      padding: 4px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 10px;
+      outline: none;
+    }
+
+    .angle-input {
+      flex: 0 0 45px;
+      width: 45px;
+      background: #0f172a;
+      border: 1px solid #a855f7;
+      color: white;
+      padding: 4px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 10px;
+      outline: none;
+    }
+
+    .label-text {
+      font-size: 9px;
+      color: #64748b;
+      margin: 0 4px;
+      white-space: nowrap;
+    }
+
+    .target-toggle-group {
+      display: flex;
+      background: #0f172a;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      padding: 4px;
+      margin-bottom: 12px;
+    }
+
+    .target-toggle-label {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: 0.2s;
+    }
+
+    .target-toggle-input:checked+.target-toggle-label {
+      background: var(--accent);
+      color: #0f172a;
+    }
+
+    .target-toggle-input {
+      display: none;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #extract-preview-panel [onclick]:hover {
+      opacity: 0.8;
+    }
+
+    .palette-item {
+      background: var(--surface);
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    .palette-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .palette-name {
+      font-weight: bold;
+      font-size: 12px;
+      color: #f8fafc;
+      width: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .swatches {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      max-width: 130px;
+      justify-content: flex-end;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid #475569;
+    }
+
+    .palette-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s;
+      z-index: 1000;
+    }
+
+    #toast.show {
+      opacity: 1;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .action-btn-sm {
+      flex: 1;
+      background: #334155;
+      border: 1px solid #475569;
+      color: white;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+
+    .action-btn-sm:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="generator" onclick="switchTab('generator')">AI智慧</button>
+    <button class="tab-btn" data-tab="custom" onclick="switchTab('custom')">大師調色</button>
+    <button class="tab-btn" data-tab="vision" onclick="switchTab('vision')">圖片靈感</button>
+    <button class="tab-btn" data-tab="asset" onclick="switchTab('asset')" style="display:none;">素材生成</button>
+    <button class="tab-btn" data-tab="saved" onclick="switchTab('saved')">收藏</button>
+  </div>
+
+  <div class="tab-content active" id="tab-generator">
+    <label>Gemini API Key</label>
+    <input type="password" class="main-input" id="api-key" placeholder="貼上 API Key">
+    <label>風格描述</label>
+    <input type="text" class="main-input" id="style-input" placeholder="例如：高質感的玻璃擬物風，帶有柔和漸層">
+
+    <div id="status" style="margin-top:0px; font-size:11px; color:#38bdf8; line-height:1.5;"></div>
+
+    <div class="manual-override-panel"
+      style="display:none; margin-top:12px; background:var(--surface); border:1px solid #334155; border-radius:8px; padding:10px;">
+      <div style="font-size:11px; font-weight:bold; color:var(--accent); margin-bottom:6px; text-align: center;">🎯
+        局部手動覆蓋</div>
+      <div class="target-toggle-group">
+        <input type="radio" id="target-fills-ai" name="apply-target-ai" value="fills" class="target-toggle-input"
+          checked>
+        <label for="target-fills-ai" class="target-toggle-label">替換「填充」</label>
+        <input type="radio" id="target-strokes-ai" name="apply-target-ai" value="strokes" class="target-toggle-input">
+        <label for="target-strokes-ai" class="target-toggle-label">替換「線框」</label>
+      </div>
+      <div class="manual-swatches-container" style="display:grid; grid-template-columns: repeat(6, 1fr); gap:6px;">
+      </div>
+    </div>
+    <button class="ai-btn" id="btn-save-palette"
+      style="display:none; background:#22c55e; color:white; margin-top: 12px;">⭐ 將此配置加入收藏</button>
+    <button class="ai-btn" id="btn-run" style="margin-top: 12px;">🚀 啟動 AI 24色系統與變數</button>
+  </div>
+
+  <div class="tab-content" id="tab-custom">
+    <div id="custom-hint-banner"
+      style="background:linear-gradient(135deg,#1e293b,#0f172a); border:1px solid #334155; border-radius:6px; padding:8px 10px; margin-bottom:10px; font-size:10px; color:#94a3b8; line-height:1.5;">
+      💡 <strong style="color:#38bdf8;">建議流程</strong>：先在「AI智慧」頁籤輸入風格提示詞並生成配色，顏色會自動填入此頁。<br>
+      或使用下方「💧 畫布萃取」從設計稿中讀取現有顏色。
+    </div>
+    <div class="action-group">
+      <button class="action-btn-sm" id="btn-extract-canvas"
+        style="background: #1e293b; border-color: #38bdf8; color: #38bdf8;">💧 畫布萃取</button>
+      <button class="action-btn-sm" onclick="autoGeneratePalette()">🪄 依主色推算</button>
+      <button class="action-btn-sm" onclick="invertDarkMode()">🌓 日夜反轉</button>
+    </div>
+
+    <!-- 階段五：萨取預覽確認面板 -->
+    <div id="extract-preview-panel" style="display:none; margin-bottom:12px; background:#0f172a; border:1px solid #38bdf8;
+             border-radius:8px; padding:10px; animation: slideDown 0.25s ease;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="font-size:11px; font-weight:bold; color:#38bdf8;">🔍 配色預覽 — 確認角色對應</div>
+        <div style="font-size:9px; color:#64748b;">點兩個色塊可互換角色</div>
+      </div>
+      <div id="preview-grid" style="display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:10px;">
+      </div>
+      <div id="preview-swap-hint"
+        style="display:none; font-size:9px; color:#fbbf24; text-align:center; margin-bottom:6px;">
+        已選取 <span id="preview-swap-from"></span>，再點一個欲交換的槽位
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="action-btn-sm" id="btn-confirm-extracted"
+          style="background:#10b981; border-color:#10b981; color:#fff; font-weight:bold;"
+          onclick="confirmExtracted()">&#10003; 確認並填入調色</button>
+        <button class="action-btn-sm" id="btn-cancel-extracted" style="border-color:#475569; color:#94a3b8;"
+          onclick="cancelPreview()">✕ 取消</button>
+      </div>
+    </div>
+
+    <div id="custom-list-container"></div>
+
+    <div class="manual-override-panel"
+      style="display:none; margin-top:12px; background:var(--surface); border:1px solid #334155; border-radius:8px; padding:10px;">
+      <div style="font-size:11px; font-weight:bold; color:var(--accent); margin-bottom:6px; text-align: center;">🎯
+        局部手動覆蓋</div>
+      <div class="target-toggle-group">
+        <input type="radio" id="target-fills-custom" name="apply-target-custom" value="fills"
+          class="target-toggle-input" checked>
+        <label for="target-fills-custom" class="target-toggle-label">替換「填充」</label>
+        <input type="radio" id="target-strokes-custom" name="apply-target-custom" value="strokes"
+          class="target-toggle-input">
+        <label for="target-strokes-custom" class="target-toggle-label">替換「線框」</label>
+      </div>
+      <div class="manual-swatches-container" style="display:grid; grid-template-columns: repeat(6, 1fr); gap:6px;">
+      </div>
+    </div>
+
+    <button class="ai-btn" id="btn-save-custom"
+      style="display:none; background:#22c55e; color:white; margin-top: 12px;">⭐ 加入收藏</button>
+    <button class="ai-btn" id="btn-apply-custom" style="background:#10b981; color:white; margin-top:12px;">🎨 寫入 Figma
+      樣式並套用</button>
+  </div>
+
+  <div class="tab-content" id="tab-vision">
+    <label>解析高品質參考圖片</label>
+    <div id="image-upload-area" onclick="document.getElementById('image-input').click()"
+      style="border: 2px dashed #475569; border-radius: 8px; height: 120px; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; margin-bottom: 16px; background-size: contain; background-repeat: no-repeat; background-position: center;">
+      <span id="upload-hint">點擊或拖曳圖片至此</span>
+    </div>
+    <input type="file" id="image-input" accept="image/*" style="display:none;">
+    <button class="ai-btn" id="btn-analyze-image"
+      style="display:none; margin-bottom: 12px; background: #a855f7; color: white;">擷取圖片色彩語意</button>
+    <div id="vision-result-area" style="display:none;">
+      <label>AI 萃取出的高質感咒語</label>
+      <textarea class="main-input" id="vision-prompt-result"
+        style="height: 70px; resize: vertical; line-height: 1.4;"></textarea>
+      <div class="action-group">
+        <button class="action-btn-sm" id="btn-copy-vision-prompt">複製</button>
+        <button class="action-btn-sm" id="btn-use-vision-prompt"
+          style="background: #22c55e; border:none;">帶入生成器</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-asset" style="display:none;">
+    <div
+      style="background:var(--surface); border:1px solid #334155; border-radius:6px; padding:10px; margin-bottom:12px;">
+      <label>🔗 參考畫布圖片 DNA</label>
+      <div style="display:flex; align-items:center; margin-top:6px; gap:8px;">
+        <div id="dna-icon" style="font-size:13px; flex-shrink:0;">⚪️</div>
+        <div id="dna-text" style="color:#94a3b8; font-size:10px; flex:1; line-height:1.4;">尚未參考任何底圖類型</div>
+      </div>
+      <div id="dna-thumbnail-container" style="display:none; margin-top:8px;">
+        <img id="dna-thumbnail" src=""
+          style="width:56px; height:56px; object-fit:cover; border-radius:5px; border:1px solid #475569;">
+      </div>
+    </div>
+    <label>想生成什麼主體？</label>
+    <input type="text" class="main-input" id="asset-subject-input" placeholder="帶有數字的3D圓球">
+    <label>當前鎖定的風格氛圍</label>
+    <input type="text" class="main-input" id="asset-style-input" disabled style="opacity:0.6;">
+    <div id="asset-status" style="font-size:11px; color:#38bdf8; min-height:20px; line-height:1.5;"></div>
+    <div id="asset-preview-container"
+      style="display:none; margin-top:12px; border:1px dashed #475569; border-radius:8px; padding:10px; text-align:center;">
+      <img id="asset-preview-img" style="max-width:100%; max-height:150px; border-radius:4px;">
+      <div class="action-group" style="margin-top:8px;">
+        <button class="ai-btn" id="btn-inject-asset"
+          style="margin-top:0; background:#10b981; color:white; padding:8px;">📥 填入畫布</button>
+      </div>
+    </div>
+    <button class="ai-btn" id="btn-generate-asset" style="margin-top:12px; background:#a855f7; color:white;">🪄 結合 DNA
+      生成素材</button>
+  </div>
+
+  <div class="tab-content" id="tab-saved">
+    <div id="saved-palettes-list" style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">尚無收藏的配色方案
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script>
+    const apiInput = document.getElementById('api-key');
+    const styleInput = document.getElementById('style-input');
+    let currentColorPalette = {};
+    let currentPrompt = "";
+    let savedPalettes = [];
+    let currentDnaType = '';
+    let currentDnaBase64 = null;
+    let isAnalyzingDna = false;
+    let uploadedImageBase64 = null;
+    let uploadedImageMime = null;
+
+    // 🎨 擴展為 24 色大師級規範
+    const roles = [
+      { id: 'bg', label: '背景 (Bg)', def: '#888888' },
+      { id: 'surface', label: '面板 (Surface)', def: '#888888' },
+      { id: 'surface2', label: '次面板 (Sf2)', def: '#888888' },
+      { id: 'surface3', label: '輸入框 (Sf3)', def: '#888888' },
+      { id: 'surface4', label: '漂浮層 (Sf4)', def: '#888888' },
+      { id: 'primary', label: '主按鈕 (Pri)', def: '#888888' },
+      { id: 'primary2', label: '主鈕2 (Pri2)', def: '#888888' },
+      { id: 'secondary', label: '次按鈕 (Sec)', def: '#888888' },
+      { id: 'secondary2', label: '三級鈕 (Sec2)', def: '#888888' },
+      { id: 'accent', label: '強調 (Accent)', def: '#888888' },
+      { id: 'danger', label: '危險 (Danger)', def: '#888888' },
+      { id: 'success', label: '成功 (Ok)', def: '#888888' },
+      { id: 'info', label: '提示 (Info)', def: '#888888' },
+      { id: 'text', label: '主文字 (Txt)', def: '#888888' },
+      { id: 'text2', label: '次文字 (Txt2)', def: '#888888' },
+      { id: 'text3', label: '弱文字 (Txt3)', def: '#888888' },
+      { id: 'textOnBtn', label: '按鈕文 (BtnT)', def: '#888888' },
+      { id: 'border', label: '線框 (Border)', def: '#888888' },
+      { id: 'divider', label: '分割線 (Div)', def: '#888888' },
+      { id: 'icon', label: '主圖示 (Icon)', def: '#888888' },
+      { id: 'icon2', label: '次圖示 (Icon2)', def: '#888888' },
+      { id: 'deco1', label: '裝飾1 (Dec1)', def: '#888888' },
+      { id: 'deco2', label: '裝飾2 (Dec2)', def: '#888888' },
+      { id: 'deco3', label: '裝飾3 (Dec3)', def: '#888888' }
+    ];
+
+    function initCustomUI() {
+      const container = document.getElementById('custom-list-container');
+      container.innerHTML = roles.map(r => `
+        <div class="color-card" id="card-${r.id}">
+          <div class="card-header">
+            <span class="role-title">${r.label}</span>
+            <button class="type-toggle" id="toggle-${r.id}" onclick="toggleType('${r.id}')">轉換為漸層</button>
+          </div>
+          <div class="input-row">
+            <input type="color" class="color-circle" id="cp1-${r.id}" value="${r.def}" onchange="syncHex('${r.id}', 1)">
+            <input type="text" class="hex-input" id="hex1-${r.id}" value="${r.def}" oninput="syncPicker('${r.id}', 1)">
+            <span class="label-text" style="margin-left: auto;">透</span>
+            <input type="number" class="alpha-input" id="a1-${r.id}" value="100" min="0" max="100">
+            <span class="label-text">%</span>
+          </div>
+          
+          <div class="input-row gradient-only" id="row2-${r.id}" style="display:none; margin-top: 6px;">
+            <span style="color:#475569; font-size:12px; margin-right:4px;">↳</span>
+            <input type="color" class="color-circle" id="cp2-${r.id}" value="#888888" onchange="syncHex('${r.id}', 2)">
+            <input type="text" class="hex-input" id="hex2-${r.id}" value="#888888" oninput="syncPicker('${r.id}', 2)">
+            <span class="label-text" style="margin-left: auto;">透</span>
+            <input type="number" class="alpha-input" id="a2-${r.id}" value="100" min="0" max="100">
+            <span class="label-text">%</span>
+          </div>
+
+          <div class="input-row gradient-only" id="row3-${r.id}" style="display:none; margin-top: 6px; justify-content: flex-end;">
+            <span class="label-text" style="color:#a855f7;">漸層角度</span>
+            <input type="number" class="angle-input" id="ang-${r.id}" value="90">
+            <span class="label-text" style="color:#a855f7;">°</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    initCustomUI();
+
+    window.toggleType = function (id) {
+      const row2 = document.getElementById(`row2-${id}`);
+      const row3 = document.getElementById(`row3-${id}`);
+      const btn = document.getElementById(`toggle-${id}`);
+      const isGrad = row2.style.display === 'none';
+      row2.style.display = isGrad ? 'flex' : 'none';
+      row3.style.display = isGrad ? 'flex' : 'none';
+      btn.innerText = isGrad ? '改為單色' : '轉換為漸層';
+      btn.classList.toggle('active', isGrad);
+    };
+
+    window.syncHex = function (id, num) { document.getElementById(`hex${num}-${id}`).value = document.getElementById(`cp${num}-${id}`).value.toUpperCase(); };
+    window.syncPicker = function (id, num) {
+      let val = document.getElementById(`hex${num}-${id}`).value;
+      if (val.length === 7 && val.startsWith('#')) document.getElementById(`cp${num}-${id}`).value = val;
+    };
+
+    function switchTab(id) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === id));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${id}`));
+      if (id === 'asset') {
+        const styleInput = document.getElementById('style-input');
+        if (styleInput) document.getElementById('asset-style-input').value = styleInput.value;
+      }
+    }
+    function showToast(m, isError = false) {
+      const t = document.getElementById('toast');
+      t.innerText = m;
+      t.style.borderColor = isError ? '#ef4444' : '#38bdf8';
+      t.style.color = isError ? '#f87171' : 'white';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── 階段六：API 強化 (超時與重試與降級備援) ──
+    async function fetchWithRetry(url, options = {}, retries = 3, timeout = 30000) {
+      for (let i = 0; i < retries; i++) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        try {
+          const response = await fetch(url, { ...options, signal: controller.signal });
+          clearTimeout(id);
+          if (!response.ok) {
+            if (response.status === 429 || response.status >= 500) {
+              if (i === retries - 1) throw new Error(`HTTP ${response.status}`);
+              const delay = Math.pow(2, i) * 1000;
+              await new Promise(r => setTimeout(r, delay));
+              continue;
+            }
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return await response.json();
+        } catch (err) {
+          clearTimeout(id);
+          if (i === retries - 1) {
+            if (err.name === 'AbortError') throw new Error("請求超時！請檢查網路連線（若需翻牆請確認 VPN / Proxy 狀態是否正常）。");
+            throw err;
+          }
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
+
+    async function fetchWithModelFallback(key, options) {
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+      let lastError;
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+          return await fetchWithRetry(url, options, 1, 45000); // 每個模型嘗試1次，45秒超時
+        } catch (err) {
+          lastError = err;
+          console.warn(`${model} 失敗:`, err.message, "正在嘗試降級備援...");
+          const msg = err.message || '';
+          const isRecoverable = msg.includes('503') || msg.includes('429') || msg.includes('超時') || msg.includes('404');
+          if (!isRecoverable) {
+            throw err; // 若非伺服器過載、超時或找不到模型，直接拋出致命錯誤
+          }
+        }
+      }
+      throw lastError;
+    }
+
+    function normalizeAIResponse(rawColors) {
+      const normalized = {};
+      const roleIds = roles.map(r => r.id);
+      roleIds.forEach(role => {
+        let data = rawColors[role];
+        if (!data) {
+          normalized[role] = { type: 'SOLID', color: '#888888', opacity: 100 };
+          return;
+        }
+
+        if (typeof data === 'string') {
+          let str = data.trim();
+          if (str.includes('gradient')) {
+            let angle = 90;
+            let angMatch = str.match(/([0-9\.-]+)deg/);
+            if (angMatch) angle = parseFloat(angMatch[1]);
+            
+            let hexes = str.match(/#[0-9A-Fa-f]{3,8}/g) || [];
+            let c1 = '#000000', o1 = 100, c2 = '#000000', o2 = 100;
+            
+            if (hexes.length >= 1) {
+              let h1 = hexes[0];
+              if (h1.length === 9) { o1 = Math.round((parseInt(h1.slice(7, 9), 16) / 255) * 100); c1 = h1.slice(0, 7); }
+              else if (h1.length === 5) { o1 = Math.round((parseInt(h1.slice(4, 5) + h1.slice(4, 5), 16) / 255) * 100); c1 = '#' + h1[1]+h1[1]+h1[2]+h1[2]+h1[3]+h1[3]; }
+              else if (h1.length === 4) { c1 = '#' + h1[1]+h1[1]+h1[2]+h1[2]+h1[3]+h1[3]; }
+              else { c1 = h1.slice(0, 7); }
+            }
+            if (hexes.length >= 2) {
+              let h2 = hexes[hexes.length - 1];
+              if (h2.length === 9) { o2 = Math.round((parseInt(h2.slice(7, 9), 16) / 255) * 100); c2 = h2.slice(0, 7); }
+              else if (h2.length === 5) { o2 = Math.round((parseInt(h2.slice(4, 5) + h2.slice(4, 5), 16) / 255) * 100); c2 = '#' + h2[1]+h2[1]+h2[2]+h2[2]+h2[3]+h2[3]; }
+              else if (h2.length === 4) { c2 = '#' + h2[1]+h2[1]+h2[2]+h2[2]+h2[3]+h2[3]; }
+              else { c2 = h2.slice(0, 7); }
+            } else if (hexes.length === 1) {
+              c2 = c1; o2 = o1;
+            }
+            
+            normalized[role] = { type: 'GRADIENT', color1: c1.toUpperCase(), opacity1: o1, color2: c2.toUpperCase(), opacity2: o2, angle: angle };
+            return;
+          }
+
+          let hexMatch = str.match(/#[0-9A-Fa-f]{3,8}/);
+          if (hexMatch) {
+            let h = hexMatch[0];
+            let o = 100;
+            if (h.length === 9) { o = Math.round((parseInt(h.slice(7, 9), 16) / 255) * 100); h = h.slice(0, 7); }
+            else if (h.length === 5) { o = Math.round((parseInt(h.slice(4, 5) + h.slice(4, 5), 16) / 255) * 100); h = '#' + h[1]+h[1]+h[2]+h[2]+h[3]+h[3]; }
+            else if (h.length === 4) { h = '#' + h[1]+h[1]+h[2]+h[2]+h[3]+h[3]; }
+            normalized[role] = { type: 'SOLID', color: h.toUpperCase(), opacity: o };
+            return;
+          }
+          
+          normalized[role] = { type: 'SOLID', color: '#888888', opacity: 100 };
+          return;
+        }
+
+        let outHex = '#000000';
+        if (data.type === 'GRADIENT' || data.color1 !== undefined) {
+          normalized[role] = {
+            type: 'GRADIENT',
+            color1: data.color1 || data.color || '#000000',
+            opacity1: data.opacity1 !== undefined ? data.opacity1 : 100,
+            color2: data.color2 || data.color || '#000000',
+            opacity2: data.opacity2 !== undefined ? data.opacity2 : 100,
+            angle: data.angle !== undefined ? data.angle : 90
+          };
+          return;
+        } else {
+          outHex = data.color || data.hex || data.value || data.solid || '#000000';
+          if (outHex === '#000000') {
+            for (const k in data) {
+              if (typeof data[k] === 'string' && (data[k].startsWith('#') || /^[0-9A-Fa-f]{3,8}$/.test(data[k]))) {
+                outHex = data[k]; break;
+              }
+            }
+          }
+        }
+
+        if (!outHex.startsWith('#')) outHex = '#' + outHex;
+        
+        let opacity = (typeof data === 'object' && data.opacity !== undefined) ? data.opacity : 100;
+        if (outHex.length === 9) {
+          opacity = Math.round((parseInt(outHex.slice(7, 9), 16) / 255) * 100);
+          outHex = outHex.slice(0, 7);
+        } else if (outHex.length === 5) {
+          opacity = Math.round((parseInt(outHex.slice(4, 5) + outHex.slice(4, 5), 16) / 255) * 100);
+          outHex = '#' + outHex[1] + outHex[1] + outHex[2] + outHex[2] + outHex[3] + outHex[3];
+        } else if (outHex.length === 4) {
+          outHex = '#' + outHex[1] + outHex[1] + outHex[2] + outHex[2] + outHex[3] + outHex[3];
+        }
+
+        normalized[role] = {
+          type: 'SOLID',
+          color: outHex.slice(0, 7).toUpperCase(),
+          opacity: opacity
+        };
+      });
+      return normalized;
+    }
+
+    // HSL 運算核心
+    function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
+    function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase(); }
+    function rgbToHsl(r, g, b) { r /= 255, g /= 255, b /= 255; const max = Math.max(r, g, b), min = Math.min(r, g, b); let h, s, l = (max + min) / 2; if (max === min) { h = s = 0; } else { const d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min); switch (max) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; } h /= 6; } return { h: h * 360, s: s * 100, l: l * 100 }; }
+    function hslToRgb(h, s, l) { h /= 360; s /= 100; l /= 100; let r, g, b; if (s === 0) { r = g = b = l; } else { const hue2rgb = (p, q, t) => { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < 1 / 2) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p; }; const q = l < 0.5 ? l * (1 + s) : l + s - l * s; const p = 2 * l - q; r = hue2rgb(p, q, h + 1 / 3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1 / 3); } return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) }; }
+    function adjustHsl(hex, hOffset, sOffset, lOffset) { const rgb = hexToRgb(hex); const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b); let newH = (hsl.h + hOffset) % 360; if (newH < 0) newH += 360; let newS = Math.max(0, Math.min(100, hsl.s + sOffset)); let newL = Math.max(0, Math.min(100, hsl.l + lOffset)); const newRgb = hslToRgb(newH, newS, newL); return rgbToHex(newRgb.r, newRgb.g, newRgb.b); }
+    function getContrastL(hex) { const rgb = hexToRgb(hex); const a = [rgb.r / 255, rgb.g / 255, rgb.b / 255].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.722; }
+
+    window.autoGeneratePalette = function () {
+      try {
+        const priHex = document.getElementById(`hex1-primary`).value;
+        if (!priHex) return showToast('⚠️ 請先設定主按鈕顏色！', true);
+        const isDark = getContrastL(priHex) < 0.3;
+        const setVal = (id, hex) => { const el1 = document.getElementById(`hex1-${id}`); if(el1) el1.value = hex; const cp1 = document.getElementById(`cp1-${id}`); if(cp1) cp1.value = hex; const row2 = document.getElementById(`row2-${id}`); if (row2 && row2.style.display !== 'none') toggleType(id); };
+        if (isDark) {
+          setVal('bg', adjustHsl(priHex, 0, -80, 80)); setVal('surface', '#FFFFFF'); setVal('surface2', adjustHsl(priHex, 0, -50, 70)); setVal('surface3', adjustHsl(priHex, 0, -40, 95));
+          setVal('secondary', adjustHsl(priHex, 0, -30, 20)); setVal('accent', adjustHsl(priHex, 150, 0, 0)); setVal('success', '#10B981');
+          setVal('text', '#0F172A'); setVal('text2', '#64748B'); setVal('textOnBtn', '#FFFFFF');
+          setVal('border', '#E2E8F0'); setVal('divider', '#F1F5F9'); setVal('icon', '#94A3B8');
+          setVal('deco1', adjustHsl(priHex, 10, -10, 10)); setVal('deco2', adjustHsl(priHex, -10, -10, -10));
+        } else {
+          setVal('bg', '#020617'); setVal('surface', adjustHsl(priHex, 0, -80, -80)); setVal('surface2', adjustHsl(priHex, 0, -60, -70)); setVal('surface3', '#000000');
+          setVal('secondary', adjustHsl(priHex, 0, -40, -30)); setVal('accent', adjustHsl(priHex, 150, 0, 0)); setVal('success', '#059669');
+          setVal('text', '#F8FAFC'); setVal('text2', '#94A3B8'); setVal('textOnBtn', '#0F172A');
+          setVal('border', adjustHsl(priHex, 0, -60, -60)); setVal('divider', adjustHsl(priHex, 0, -80, -85)); setVal('icon', '#CBD5E1');
+          setVal('deco1', adjustHsl(priHex, 10, -10, -10)); setVal('deco2', adjustHsl(priHex, -10, -10, -20));
+        }
+        showToast("🪄 已自動推算完整 24 色系統！");
+      } catch (err) {
+        showToast('❌ 自動推算失敗：' + err.message, true);
+        console.error(err);
+      }
+    };
+
+    window.invertDarkMode = function () {
+      roles.forEach(r => {
+        const isGrad = document.getElementById(`row2-${r.id}`).style.display !== 'none';
+        const flipHex = (hex) => { const rgb = hexToRgb(hex); const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b); return rgbToHex(hslToRgb(hsl.h, hsl.s, 100 - hsl.l).r, hslToRgb(hsl.h, hsl.s, 100 - hsl.l).g, hslToRgb(hsl.h, hsl.s, 100 - hsl.l).b); };
+        const newHex1 = flipHex(document.getElementById(`hex1-${r.id}`).value);
+        document.getElementById(`hex1-${r.id}`).value = newHex1; document.getElementById(`cp1-${r.id}`).value = newHex1;
+        if (isGrad) {
+          const newHex2 = flipHex(document.getElementById(`hex2-${r.id}`).value);
+          document.getElementById(`hex2-${r.id}`).value = newHex2; document.getElementById(`cp2-${r.id}`).value = newHex2;
+        }
+      });
+      showToast("🌓 日夜模式明度反轉完成！");
+    };
+
+    // ── 階段五：萨取預覽確認相關函式 ──
+    let pendingExtractedColors = null; // 待確認的萨取結果
+    let previewSwapFrom = null;        // 互換第一個選取的角色
+
+    function getPreviewCss(data) {
+      if (!data) return '#888';
+      if (data.type === 'GRADIENT') {
+        const o1 = (data.opacity1 !== undefined ? data.opacity1 : 100) / 100;
+        const o2 = (data.opacity2 !== undefined ? data.opacity2 : 100) / 100;
+        const h1 = String(data.color1 || data.hex1 || '#000'), h2 = String(data.color2 || data.hex2 || '#000');
+        const toRgba = (h, a) => { h = String(h); const r = parseInt(h.slice(1, 3) || '0', 16), g = parseInt(h.slice(3, 5) || '0', 16), b = parseInt(h.slice(5, 7) || '0', 16); return `rgba(${r},${g},${b},${a})`; };
+        return `linear-gradient(${data.angle || 90}deg,${toRgba(h1, o1)},${toRgba(h2, o2)})`;
+      }
+      const op = (data.opacity !== undefined ? data.opacity : 100) / 100;
+      const h = String(data.color || data.hex || '#888');
+      const r = parseInt(h.slice(1, 3) || '88', 16), g = parseInt(h.slice(3, 5) || '88', 16), b = parseInt(h.slice(5, 7) || '88', 16);
+      return op < 0.99 ? `rgba(${r},${g},${b},${op})` : h;
+    }
+
+    const roleLabelMap = {
+      bg: '背景', surface: '面板', surface2: '次面板', surface3: '輸入框', surface4: '漂浮層',
+      primary: '主按鈕', primary2: '次主鈕', secondary: '次按鈕', secondary2: '三級鈕', accent: '強調', danger: '危險', success: '成功', info: '提示',
+      text: '主文字', text2: '次文字', text3: '弱文字', textOnBtn: '按鈕文', border: '線框',
+      divider: '分割線', icon: '圖示', icon2: '次圖示', deco1: '裝飾1', deco2: '裝飾2', deco3: '裝飾3'
+    };
+
+    window.showExtractionPreview = function (colors) {
+      pendingExtractedColors = JSON.parse(JSON.stringify(colors));
+      previewSwapFrom = null;
+      renderPreviewGrid();
+      document.getElementById('extract-preview-panel').style.display = 'block';
+      document.getElementById('extract-preview-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // 切換到大師調色 tab
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      const customBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.onclick && b.onclick.toString().includes('tab-custom'));
+      if (customBtn) customBtn.classList.add('active');
+      const customTab = document.getElementById('tab-custom');
+      if (customTab) customTab.classList.add('active');
+    };
+
+    function renderPreviewGrid() {
+      const roleOrder = roles.map(r => r.id);
+      const grid = document.getElementById('preview-grid');
+      grid.innerHTML = roleOrder.map(role => {
+        const data = pendingExtractedColors[role];
+        const css = getPreviewCss(data);
+        const isSelected = previewSwapFrom === role;
+        return `<div onclick="previewClickRole('${role}')"
+          style="cursor:pointer; padding:4px; border-radius:5px; text-align:center;
+                 border:2px solid ${isSelected ? '#f59e0b' : 'transparent'};
+                 background:${isSelected ? 'rgba(245,158,11,0.1)' : 'transparent'};
+                 transition:0.15s;">
+          <div style="height:26px; border-radius:4px; background:${css}; border:1px solid rgba(255,255,255,0.12); margin-bottom:2px;"></div>
+          <div style="font-size:8px; color:${isSelected ? '#f59e0b' : '#64748b'}; white-space:nowrap;">${roleLabelMap[role] || role}</div>
+        </div>`;
+      }).join('');
+    }
+
+    window.previewClickRole = function (role) {
+      if (!previewSwapFrom) {
+        // 第一次點擊：選含起始角色
+        previewSwapFrom = role;
+        document.getElementById('preview-swap-hint').style.display = 'block';
+        document.getElementById('preview-swap-from').textContent = roleLabelMap[role] || role;
+      } else if (previewSwapFrom === role) {
+        // 再次點擊同一個：取消選取
+        previewSwapFrom = null;
+        document.getElementById('preview-swap-hint').style.display = 'none';
+      } else {
+        // 第二次點擊：執行互換
+        const fromRole = previewSwapFrom;
+        const tmp = pendingExtractedColors[fromRole];
+        pendingExtractedColors[fromRole] = pendingExtractedColors[role];
+        pendingExtractedColors[role] = tmp;
+
+        const fromLabel = roleLabelMap[fromRole] || fromRole;
+        const toLabel = roleLabelMap[role] || role;
+
+        previewSwapFrom = null;
+        document.getElementById('preview-swap-hint').style.display = 'none';
+        showToast(`✨ 已互換 ${fromLabel} 與 ${toLabel}`);
+      }
+      renderPreviewGrid();
+    };
+
+    window.confirmExtracted = function () {
+      if (!pendingExtractedColors) return;
+      // 將確認後的顏色填入調色輸入框
+      for (const [role, data] of Object.entries(pendingExtractedColors)) {
+        const isGrad = data && data.type === 'GRADIENT';
+        const row2 = document.getElementById(`row2-${role}`);
+        if (!row2) continue;
+        if (isGrad) {
+          if (row2.style.display === 'none') toggleType(role);
+          document.getElementById(`hex1-${role}`).value = data.color1 || '#000000';
+          document.getElementById(`cp1-${role}`).value = data.color1 || '#000000';
+          document.getElementById(`a1-${role}`).value = data.opacity1 !== undefined ? data.opacity1 : 100;
+          document.getElementById(`hex2-${role}`).value = data.color2 || '#000000';
+          document.getElementById(`cp2-${role}`).value = data.color2 || '#000000';
+          document.getElementById(`a2-${role}`).value = data.opacity2 !== undefined ? data.opacity2 : 100;
+          document.getElementById(`ang-${role}`).value = data.angle || 90;
+        } else {
+          if (row2.style.display !== 'none') toggleType(role);
+          document.getElementById(`hex1-${role}`).value = data.color || '#000000';
+          document.getElementById(`cp1-${role}`).value = data.color || '#000000';
+          document.getElementById(`a1-${role}`).value = data.opacity !== undefined ? data.opacity : 100;
+        }
+      }
+      cancelPreview();
+      showToast("✅ 24 色已填入調色面板，可直接點「寫入 Figma 樣式並套用」");
+    };
+
+    window.cancelPreview = function () {
+      pendingExtractedColors = null;
+      previewSwapFrom = null;
+      document.getElementById('extract-preview-panel').style.display = 'none';
+      document.getElementById('preview-swap-hint').style.display = 'none';
+    };
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (msg.type === 'LOAD_KEY_AND_PALETTES') {
+        if (msg.key) apiInput.value = msg.key;
+        if (msg.palettes && Array.isArray(msg.palettes)) { savedPalettes = msg.palettes; renderPalettes(); }
+      }
+      if (msg.type === 'EXTRACTED_COLORS') {
+        showExtractionPreview(msg.colors);
+        showToast("✨ 色彩已萨取！請先確認角色對應再點「確認並填入」");
+      }
+      if (msg.type === 'RENDER_COMPLETE') {
+        document.querySelectorAll('.manual-override-panel').forEach(p => p.style.display = 'block');
+        document.getElementById('btn-save-palette').style.display = 'block';
+        document.getElementById('btn-save-custom').style.display = 'block';
+        document.getElementById('status').innerHTML = `<div style="color: #4ade80;">✨ 更新了 ${msg.count} 個圖層</div>`;
+        showToast(`更新完成！`);
+      }
+      if (msg.type === 'IMAGE_DNA') {
+        if (isAnalyzingDna) return;
+        const base64 = typeof msg.bytes === 'string' ? msg.bytes : arrayBufferToBase64(msg.bytes);
+        if (currentDnaBase64 === base64) return;
+        currentDnaBase64 = base64;
+        currentDnaType = '';
+        document.getElementById('dna-icon').innerHTML = '🟡';
+        document.getElementById('dna-text').style.color = '#fbbf24';
+        document.getElementById('dna-text').innerHTML = '正在萃取底圖 DNA...';
+        document.getElementById('dna-thumbnail').src = 'data:image/png;base64,' + base64;
+        document.getElementById('dna-thumbnail-container').style.display = 'block';
+        analyzeImageDNA(base64);
+      }
+      if (msg.type === 'CLEAR_DNA') {
+        currentDnaBase64 = null;
+        currentDnaType = '';
+        document.getElementById('dna-icon').innerHTML = '⚪️';
+        document.getElementById('dna-text').style.color = '#94a3b8';
+        document.getElementById('dna-text').innerHTML = '尚未參考任何底圖類型';
+        document.getElementById('dna-thumbnail-container').style.display = 'none';
+      }
+    };
+    document.getElementById('btn-extract-canvas').onclick = () => {
+      showToast('⏳ 正在深度萃取畫布色彩，請稍候...', false);
+      setTimeout(() => parent.postMessage({ pluginMessage: { type: 'EXTRACT_CANVAS_COLORS' } }, '*'), 50);
+    };
+
+    function getThemeFromUI() {
+      const theme = {};
+      roles.forEach(r => {
+        const isGrad = document.getElementById(`row2-${r.id}`).style.display !== 'none';
+        if (isGrad) {
+          theme[r.id] = {
+            type: 'GRADIENT',
+            color1: document.getElementById(`hex1-${r.id}`).value || '#000000', opacity1: parseInt(document.getElementById(`a1-${r.id}`).value) || 100,
+            color2: document.getElementById(`hex2-${r.id}`).value || '#000000', opacity2: parseInt(document.getElementById(`a2-${r.id}`).value) || 100,
+            angle: parseInt(document.getElementById(`ang-${r.id}`).value) || 90
+          };
+        } else {
+          theme[r.id] = { type: 'SOLID', color: document.getElementById(`hex1-${r.id}`).value || '#000000', opacity: parseInt(document.getElementById(`a1-${r.id}`).value) || 100 };
+        }
+      });
+      return theme;
+    }
+
+    function renderManualSwatches(theme) {
+      window.currentActivePalette = theme;
+      const html = roles.map(r => {
+        if (theme[r.id]) {
+          const d = theme[r.id];
+          const bg = d.type === 'SOLID' ? d.color : `linear-gradient(${d.angle || 90}deg, ${d.color1}, ${d.color2})`;
+          return `
+            <div onclick="forceApplyColor('${r.id}')" title="點擊強制套用 ${r.label}" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; background:#1e293b; border: 1px solid #334155; padding:6px 2px; border-radius:6px;">
+              <div style="width:20px; height:20px; border-radius:50%; background:${bg}; border:1px solid #475569; margin-bottom:4px;"></div>
+              <div style="font-size:9px; color:#f8fafc; transform: scale(0.9);">${r.label.split(' ')[0]}</div>
+            </div>`;
+        }
+      }).join('');
+      document.querySelectorAll('.manual-swatches-container').forEach(c => c.innerHTML = html);
+    }
+
+    window.forceApplyColor = function (key) {
+      if (!window.currentActivePalette) return;
+      const activeTab = document.querySelector('.tab-content.active');
+      const targetRadio = activeTab.querySelector('input[type="radio"]:checked');
+      if (!targetRadio) return;
+      parent.postMessage({ pluginMessage: { type: 'FORCE_APPLY_COLOR', color: window.currentActivePalette[key], target: targetRadio.value } }, '*');
+    };
+
+    document.getElementById('btn-apply-custom').onclick = () => {
+      try {
+        const theme = getThemeFromUI();
+        if (!theme || Object.keys(theme).length === 0) return showToast('❌ 錯誤：無法讀取面板色彩！', true);
+        currentColorPalette = theme; currentPrompt = "手動自訂色彩";
+        renderManualSwatches(theme);
+        parent.postMessage({ pluginMessage: { type: 'APPLY_AI_STYLE', color: theme, apiKey: apiInput.value } }, '*');
+      } catch (err) {
+        showToast('❌ 寫入失敗：' + err.message, true);
+        console.error(err);
+      }
+    };
+
+    document.getElementById('btn-run').onclick = async function () {
+      const key = apiInput.value.trim(); const style = styleInput.value.trim();
+      if (!key || !style) return showToast('請填寫 API Key 與風格描述', true);
+      try {
+        this.disabled = true; document.getElementById('status').innerHTML = '🧠 AI 正在思考 24 色系統架構...';
+        
+        const dictionary = roles.map(r => `- ${r.id}: ${r.label}`).join('\n');
+
+        const data = await fetchWithModelFallback(key, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            generationConfig: { temperature: 0.85 },
+            contents: [{
+              parts: [{
+                text: `# Role
+你是一位擁有 15 年經驗的「頂尖 UI/UX 視覺與 Design System 色彩專家」。你擅長將抽象的情境與風格描述，精準轉譯為具備高度擴充性、一致性且乾淨明瞭的網頁 UI 色彩系統。
+
+# UI Roles Dictionary
+以下是這 24 個變數在 UI 設計中的【精確含義】，請你**絕對要遵守**它們的用途來配置色彩。絕對不可以把「按鈕色」配給「面板」，或者把「背景色」配給「按鈕」！
+${dictionary}
+
+
+# Task
+請根據以下【視覺風格描述】，為 24 個 UI 區塊分配對應的色碼。
+👉 【視覺風格描述】：${style}
+
+# Constraints
+1. **極致的色彩豐富度**：你必須大膽運用「對比色」或「鄰近色」，絕對不要只用單一色系！例如：如果主色是綠色，點綴色可以是亮橘色或柔粉色。特別是 secondary, accent, danger, info 這幾個區塊**必須跳脫主色系**！
+2. **強制狀態色區分**：danger 必須是紅色系，success 必須是綠色系，info 必須是藍色系，這三個狀態絕對不可混淆或使用灰色！
+3. **強制使用漸層**：請**務必**為 bg, primary, danger, success 等區塊直接輸出 \`linear-gradient(90deg, #HEX1, #HEX2)\` 來創造華麗的漸層效果，讓按鈕看起來更立體！
+4. 確保整體畫面視覺清晰、不雜亂。背景與面板之間要有微妙的層次感。主/次文字與背景之間必須符合 WCAG AA 級對比度。
+5. **必須**包含 24 個特定的鍵值。值可以是純色 HEX 色碼（支援 8 碼透明度，如 "#FFFFFF80"），或者是漸層色 "linear-gradient(90deg, #HEX1, #HEX2)"。
+
+# Output Format
+請嚴格輸出 JSON 格式。請勿包含任何其他說明文字。
+{
+  "colors": {
+    "bg": "linear-gradient(135deg, #HEX1, #HEX2)",
+    "surface": "#...",
+    "surface2": "#...",
+    "surface3": "#...",
+    "surface4": "#...",
+    "primary": "linear-gradient(90deg, #HEX1, #HEX2)",
+    "primary2": "#...",
+    "secondary": "#...",
+    "secondary2": "#...",
+    "accent": "#...",
+    "danger": "#...",
+    "success": "#...",
+    "info": "#...",
+    "text": "#...",
+    "text2": "#...",
+    "text3": "#...",
+    "textOnBtn": "#...",
+    "border": "#...",
+    "divider": "#...",
+    "icon": "#...",
+    "icon2": "#...",
+    "deco1": "linear-gradient(45deg, #HEX1, #HEX2)",
+    "deco2": "#...",
+    "deco3": "#..."
+  }
+}` }]
+            }]
+          })
+        });
+
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error("AI 未能回傳有效結果");
+
+        let parsedJson;
+        let cleanStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        try {
+          parsedJson = JSON.parse(cleanStr);
+        } catch (e) {
+          try {
+            parsedJson = (new Function('return ' + cleanStr))();
+          } catch (e2) {
+            throw new Error("AI 產生的 JSON 格式錯誤。原始輸出：\n" + cleanStr);
+          }
+        }
+
+        let rawColors = parsedJson.colors || parsedJson;
+        if (!rawColors || Object.keys(rawColors).length < 5) {
+          throw new Error("AI 回傳的內容不符合 24 色變數結構，導致插件無法讀取色碼。");
+        }
+
+        const normalizedTheme = normalizeAIResponse(rawColors);
+
+        let descHtml = '<div>色彩系統生成完畢，已套用豐富漸層與對比色！</div>';
+        document.getElementById('status').innerHTML = '<div style="color: #4ade80; margin-bottom: 8px;">✅ AI 色彩系統架構完成！</div>'
+          + '<div style="max-height: 250px; overflow-y: auto; text-align: left; background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid #334155; font-size: 11px; color: #e2e8f0; line-height: 1.5; white-space: pre-wrap; user-select: text;">' + descHtml + '</div>';
+
+        // 直接更新 UI 並套用，不觸發 EXTRACTED_COLORS 預覽面板
+        currentColorPalette = normalizedTheme;
+        currentPrompt = style;
+
+        // 更新大師調色頁面的各個欄位
+        updateCustomUIWithTheme(normalizedTheme);
+        renderManualSwatches(normalizedTheme);
+
+        parent.postMessage({ pluginMessage: { type: 'APPLY_AI_STYLE', color: normalizedTheme, apiKey: key } }, '*');
+      } catch (err) {
+        document.getElementById('status').innerHTML = `❌ 錯誤：${err.message.replace(/\n/g, '<br>')}`;
+        showToast("發生錯誤，請查看面板訊息", true);
+      } finally { this.disabled = false; }
+    };
+
+    function updateCustomUIWithTheme(theme) {
+      for (const [role, data] of Object.entries(theme)) {
+        const row2 = document.getElementById(`row2-${role}`);
+        if (!row2) continue;
+        const isGrad = data.type === 'GRADIENT';
+        const currentIsGrad = row2.style.display !== 'none';
+        if (isGrad !== currentIsGrad) toggleType(role);
+
+        if (isGrad) {
+          document.getElementById(`hex1-${role}`).value = data.color1 || '#000000';
+          document.getElementById(`cp1-${role}`).value = data.color1 || '#000000';
+          document.getElementById(`a1-${role}`).value = data.opacity1 !== undefined ? data.opacity1 : 100;
+          document.getElementById(`hex2-${role}`).value = data.color2 || '#000000';
+          document.getElementById(`cp2-${role}`).value = data.color2 || '#000000';
+          document.getElementById(`a2-${role}`).value = data.opacity2 !== undefined ? data.opacity2 : 100;
+          document.getElementById(`ang-${role}`).value = data.angle || 90;
+        } else {
+          document.getElementById(`hex1-${role}`).value = data.color || '#000000';
+          document.getElementById(`cp1-${role}`).value = data.color || '#000000';
+          document.getElementById(`a1-${role}`).value = data.opacity !== undefined ? data.opacity : 100;
+        }
+      }
+    }
+
+    function renderPalettes() {
+      const list = document.getElementById('saved-palettes-list');
+      if (savedPalettes.length === 0) {
+        list.innerHTML = `<div style="text-align:center; color:#94a3b8; margin-top:20px;">尚無收藏的配色方案</div>`; return;
+      }
+      const colorOrder24 = roles.map(r => r.id);
+      const shortLabel = { bg: 'BG', surface: 'SF', surface2: 'SF2', surface3: 'SF3', surface4: 'SF4', primary: 'PRI', primary2: 'PR2', secondary: 'SEC', secondary2: 'SE2', accent: 'ACC', danger: 'DNG', success: 'OK', info: 'INF', text: 'TXT', text2: 'TX2', text3: 'TX3', textOnBtn: 'BTN', border: 'BDR', divider: 'DIV', icon: 'ICO', icon2: 'IC2', deco1: 'DC1', deco2: 'DC2', deco3: 'DC3' };
+      const getCss = (s) => {
+        if (!s) return '#334155';
+        if (s.type === 'SOLID') {
+          const hex = String(s.color || s.hex || '#334155');
+          const op = (s.opacity !== undefined) ? Math.max(0, Math.min(100, Number(s.opacity))) / 100 : 1;
+          if (op < 0.99) { const r = parseInt(hex.slice(1, 3) || '33', 16), g = parseInt(hex.slice(3, 5) || '41', 16), b = parseInt(hex.slice(5, 7) || '55', 16); return `rgba(${r},${g},${b},${op.toFixed(2)})`; }
+          return hex;
+        }
+        const op1 = (s.opacity1 !== undefined) ? Math.max(0, Math.min(100, Number(s.opacity1))) / 100 : 1;
+        const op2 = (s.opacity2 !== undefined) ? Math.max(0, Math.min(100, Number(s.opacity2))) / 100 : 1;
+        const h1 = String(s.color1 || s.hex1 || s.color || s.hex || '#000'), h2 = String(s.color2 || s.hex2 || s.color || s.hex || '#000');
+        const rgba = (h, a) => { h = String(h); const r = parseInt(h.slice(1, 3) || '0', 16), g = parseInt(h.slice(3, 5) || '0', 16), b = parseInt(h.slice(5, 7) || '0', 16); return `rgba(${r},${g},${b},${a.toFixed(2)})`; };
+        return `linear-gradient(${s.angle || 90}deg,${rgba(h1, op1)},${rgba(h2, op2)})`;
+      };
+      list.innerHTML = savedPalettes.map(item => {
+        const c = item.colors;
+        const strip = colorOrder24.map(k => `<div style="flex:1;height:100%;background:${getCss(c[k])};min-width:0;" title="${k}"></div>`).join('');
+        const grid = colorOrder24.map(k => {
+          const lbl = shortLabel[k] || k;
+          return `<div title="${k}" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div style="width:100%;height:22px;border-radius:4px;background:${getCss(c[k])};border:1px solid rgba(255,255,255,0.15);box-shadow:inset 0 1px 2px rgba(0,0,0,0.1);"></div>
+            <div style="font-size:9px;color:#94a3b8;font-weight:600;">${lbl}</div>
+          </div>`;
+        }).join('');
+        return `
+          <div class="palette-item" id="pitem-${item.id}">
+            <div id="pname-${item.id}" style="font-weight:bold;font-size:14px;color:#f8fafc;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.5px;">${item.name}</div>
+            <div style="height:14px;border-radius:6px;display:flex;overflow:hidden;margin-bottom:14px;border:1px solid rgba(255,255,255,0.12);">${strip}</div>
+            <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px 6px;margin-bottom:16px;">${grid}</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+
+              <button class="action-btn-sm" style="background:#38bdf8;color:#0f172a;border-color:#38bdf8;" onclick="applySaved('${item.id}')">套用</button>
+              <button class="action-btn-sm" onclick="copyTokensSaved('${item.id}')">CSS</button>
+              <button class="action-btn-sm" onclick="renameSaved('${item.id}')">更名</button>
+              <button class="action-btn-sm" onclick="editSaved('${item.id}')">調色</button>
+              <button class="action-btn-sm" style="border-color:#ef4444;color:#f87171;" onclick="deleteSaved('${item.id}')">刪除</button>
+            </div>
+            <div id="edit-panel-${item.id}" style="display:none;margin-top:10px;"></div>
+          </div>`;
+      }).join('');
+    }
+
+    window.applySaved = function (id) {
+      const item = savedPalettes.find(p => p.id === id);
+      if (!item) return;
+      const normalizedTheme = normalizeAIResponse(item.colors);
+      currentColorPalette = normalizedTheme;
+      switchTab('custom');
+
+      updateCustomUIWithTheme(normalizedTheme);
+      renderManualSwatches(normalizedTheme);
+
+      parent.postMessage({ pluginMessage: { type: 'APPLY_AI_STYLE', color: normalizedTheme, apiKey: apiInput.value } }, '*');
+      showToast(`已套用收藏：${item.name}`);
+    }
+
+    window.deleteSaved = function (id) {
+      savedPalettes = savedPalettes.filter(p => p.id !== id);
+      renderPalettes();
+      parent.postMessage({ pluginMessage: { type: 'SAVE_PALETTES', palettes: savedPalettes } }, '*');
+      showToast('已刪除收藏方案');
+    }
+
+    window.renameSaved = function (id) {
+      const nameEl = document.getElementById('pname-' + id);
+      if (!nameEl || nameEl.querySelector('input')) return;
+      const cur = nameEl.innerText;
+      nameEl.innerHTML = `<input type="text" id="rename-inp-${id}" value="${cur}" style="background:#0f172a;border:1px solid #38bdf8;color:white;padding:4px 6px;border-radius:4px;width:100%;box-sizing:border-box;outline:none;font-size:11px;" onkeydown="if(event.key==='Enter'){window.confirmRename('${id}')}" onblur="window.confirmRename('${id}')">`;
+      const inp = document.getElementById('rename-inp-' + id);
+      if (inp) { inp.focus(); inp.select(); }
+    };
+
+    window.confirmRename = function (id) {
+      const inp = document.getElementById('rename-inp-' + id);
+      if (!inp) return;
+      const newName = inp.value.trim();
+      const item = savedPalettes.find(p => p.id === id);
+      if (item && newName) {
+        item.name = newName;
+        parent.postMessage({ pluginMessage: { type: 'SAVE_PALETTES', palettes: savedPalettes } }, '*');
+      }
+      renderPalettes();
+    };
+
+    window.copyTokensSaved = function (id) {
+      const item = savedPalettes.find(p => p.id === id);
+      if (!item) return;
+      const c = item.colors;
+      const getVal = (s) => {
+        if (!s) return '#888888';
+        if (s.type === 'GRADIENT') return `linear-gradient(${s.angle || 90}deg, ${s.color1 || '#000'}, ${s.color2 || '#000'})`;
+        return s.color || '#888888';
+      };
+      let css = '/* ' + item.name + ' */\n:root {\n';
+      Object.entries(c).forEach(([k, v]) => { css += `  --${k}: ${getVal(v)};\n`; });
+      css += '}';
+      navigator.clipboard.writeText(css)
+        .then(() => showToast('CSS Tokens 複製成功！'))
+        .catch(() => {
+          const el = document.createElement('textarea');
+          el.value = css; document.body.appendChild(el); el.select();
+          try { document.execCommand('copy'); showToast('CSS Tokens 複製成功！'); } catch (e) { }
+          document.body.removeChild(el);
+        });
+    };
+
+    const colorLabels = roleLabelMap;
+    const colorOrder24Edit = roles.map(r => r.id);
+
+    window.editSaved = function (id) {
+      const item = savedPalettes.find(p => p.id === id);
+      if (!item) return;
+      const panel = document.getElementById('edit-panel-' + id);
+      if (!panel) return;
+      if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+      const c = item.colors;
+      const getHex = (s) => {
+        if (!s) return '#334155';
+        if (s.type === 'GRADIENT') return s.color1 || '#000000';
+        return s.color || '#000000';
+      };
+      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;background:#0f172a;padding:12px;border-radius:8px;">';
+      colorOrder24Edit.forEach(key => {
+        const s = c[key] || { type: 'SOLID', color: '#334155' };
+        const hex = getHex(s);
+        html += `
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="color" value="${hex}" title="${key}"
+              style="width:28px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,0.1);"
+              oninput="window.updateSavedColor('${id}','${key}',this.value)">
+            <div style="font-size:12px;color:#f8fafc;font-weight:500;">${colorLabels[key] || key}</div>
+          </div>`;
+      });
+      html += '</div>';
+      html += `<button class="action-btn-sm" style="width:100%;" onclick="document.getElementById('edit-panel-${id}').style.display='none'">&#x2715; 收起</button>`;
+      panel.innerHTML = html;
+      panel.style.display = 'block';
+    };
+
+    window.updateSavedColor = function (id, key, hexColor) {
+      const item = savedPalettes.find(p => p.id === id);
+      if (!item || !item.colors[key]) return;
+      if (item.colors[key].type === 'GRADIENT') {
+        item.colors[key].color1 = hexColor;
+        item.colors[key].color2 = hexColor;
+        item.colors[key].type = 'SOLID';
+        item.colors[key].color = hexColor;
+      } else {
+        item.colors[key].color = hexColor;
+      }
+      const swatch = document.querySelector(`#pitem-${id} [title="${key}"]`);
+      if (swatch) swatch.style.background = hexColor;
+      parent.postMessage({ pluginMessage: { type: 'SAVE_PALETTES', palettes: savedPalettes } }, '*');
+    };
+
+    // ── 工具：ArrayBuffer → Base64 ──
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return window.btoa(binary);
+    }
+
+    // ── DNA Vision 分析（背景靜默呼叫 Gemini Vision）──
+    async function analyzeImageDNA(base64) {
+      const key = apiInput.value.trim();
+      if (!key) {
+        document.getElementById('dna-icon').innerHTML = '🔴';
+        document.getElementById('dna-text').style.color = '#f87171';
+        document.getElementById('dna-text').innerHTML = '請先在「AI智慧」頁籤填寫 API Key';
+        return;
+      }
+      isAnalyzingDna = true;
+      try {
+        const prompt = '請以 UI 技術總監的視角分析這張圖片。請完全忽略圖片的主體內容，僅判讀其幾何與材質屬性。直接回覆一個短詞，如：「極簡線性 (Line Art)」、「卡通扁平化 (Flat Cartoon)」、「毛玻璃擬物 (Glassmorphism 3D)」、「寫實照片 (Realistic Photo)」、「次世代 3D (Next-Gen 3D)」。禁止任何冗長語句。';
+        const result = await fetchWithModelFallback(key, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: 'image/png', data: base64 } }] }] })
+        });
+        currentDnaType = result.candidates[0].content.parts[0].text.trim().replace(/\n/g, ' ');
+        document.getElementById('dna-icon').innerHTML = '🟢';
+        document.getElementById('dna-text').style.color = '#4ade80';
+        document.getElementById('dna-text').innerHTML = '已鎖定：<strong style="color:white;">' + currentDnaType + '</strong>';
+      } catch (e) {
+        document.getElementById('dna-icon').innerHTML = '🔴';
+        document.getElementById('dna-text').style.color = '#f87171';
+        document.getElementById('dna-text').innerHTML = 'DNA 萃取失敗：' + e.message;
+      } finally {
+        isAnalyzingDna = false;
+      }
+    }
+
+    // ── 素材生成 ──
+    let lastGeneratedBase64 = null;
+    document.getElementById('btn-generate-asset').onclick = async function () {
+      const subject = document.getElementById('asset-subject-input').value.trim();
+      if (!subject) return alert('請輸入想生成的主體，例如：魔法藥水瓶');
+      const style = styleInput.value.trim();
+      const dnaClause = currentDnaType ? '整體視覺必須嚴格遵循「' + currentDnaType + '」技術，並且' : '';
+      const combinedPrompt = '繪製一個用於 UI 介面的素材。主體內容為：[' + subject + ']。' + dnaClause + '完全契合 [' + (style || '現代科技風') + '] 的視覺氛圍。';
+      const stat = document.getElementById('asset-status');
+      stat.innerHTML = '🪄 組裝咒語中...<br><span style="color:#64748b;font-size:9px;">' + combinedPrompt + '</span>';
+      this.disabled = true;
+      await new Promise(r => setTimeout(r, 1800));
+      // ── [接頭點] 在此替換為實際 Image Gen API（如 Imagen / DALL-E）──
+      const cv = document.createElement('canvas'); cv.width = 400; cv.height = 400;
+      const ctx = cv.getContext('2d');
+      const bgC = (currentColorPalette && currentColorPalette.bg && currentColorPalette.bg.color) ? currentColorPalette.bg.color : '#0f172a';
+      const priC = (currentColorPalette && currentColorPalette.primary && currentColorPalette.primary.color) ? currentColorPalette.primary.color : '#38bdf8';
+      ctx.fillStyle = bgC; ctx.fillRect(0, 0, 400, 400);
+      ctx.fillStyle = priC; ctx.beginPath(); ctx.arc(200, 200, 140, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = 'bold 28px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(subject.slice(0, 12), 200, 190);
+      ctx.font = '14px system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText(currentDnaType ? currentDnaType.slice(0, 22) : 'AI Generated', 200, 235);
+      lastGeneratedBase64 = cv.toDataURL('image/png').split(',')[1];
+      document.getElementById('asset-preview-img').src = 'data:image/png;base64,' + lastGeneratedBase64;
+      document.getElementById('asset-preview-container').style.display = 'block';
+      stat.innerHTML = '<span style="color:#4ade80;">✅ 素材生成完畢！點擊下方按鈕填入畫布。</span><br><span style="color:#64748b;font-size:9px;">' + combinedPrompt + '</span>';
+      this.disabled = false;
+    };
+
+    document.getElementById('btn-inject-asset').onclick = function () {
+      if (!lastGeneratedBase64) return showToast('請先生成素材', true);
+      parent.postMessage({ pluginMessage: { type: 'INJECT_IMAGE', base64: lastGeneratedBase64 } }, '*');
+      showToast('✨ 素材已精準注入畫布！');
+    };
+
+    // ── 圖片靈感 Tab ──
+    const imageUploadArea = document.getElementById('image-upload-area');
+    const imageInput = document.getElementById('image-input');
+    imageInput.addEventListener('change', e => handleVisionFile(e.target.files[0]));
+    imageUploadArea.addEventListener('dragover', e => { e.preventDefault(); imageUploadArea.style.borderColor = '#38bdf8'; });
+    imageUploadArea.addEventListener('dragleave', () => { imageUploadArea.style.borderColor = '#475569'; });
+    imageUploadArea.addEventListener('drop', e => { e.preventDefault(); imageUploadArea.style.borderColor = '#475569'; if (e.dataTransfer.files[0]) handleVisionFile(e.dataTransfer.files[0]); });
+
+    function handleVisionFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 600; let w = img.width, h = img.height;
+          if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+          else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = c.toDataURL('image/jpeg', 0.75);
+          uploadedImageBase64 = dataUrl.split(',')[1]; uploadedImageMime = 'image/jpeg';
+          imageUploadArea.style.backgroundImage = 'url(' + dataUrl + ')';
+          document.getElementById('upload-hint').style.display = 'none';
+          document.getElementById('btn-analyze-image').style.display = 'block';
+          document.getElementById('vision-result-area').style.display = 'none';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('btn-analyze-image').onclick = async function () {
+      const key = apiInput.value.trim();
+      if (!key) return showToast('請先填寫 API Key', true);
+      if (!uploadedImageBase64) return;
+      try {
+        this.disabled = true; this.innerHTML = '解析中...';
+        const prompt = '你是一位世界頂尖的 UI 視覺總監。請精確分析這張圖片的核心色彩配置與整體風格氛圍，萃取一組用來產生 UI 配盤的高級提示詞。直接給出 45 字以內精煉咒語，不需解釋。';
+
+        const result = await fetchWithModelFallback(key, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: uploadedImageMime, data: uploadedImageBase64 } }] }] })
+        });
+
+        if (result.error) throw new Error(result.error.message);
+        document.getElementById('vision-prompt-result').value = result.candidates[0].content.parts[0].text.trim();
+        document.getElementById('vision-result-area').style.display = 'block';
+      } catch (err) { showToast('解析失敗：' + err.message, true); }
+      finally { this.disabled = false; this.innerHTML = '擷取圖片色彩語意'; }
+    };
+
+    document.getElementById('btn-copy-vision-prompt').onclick = function () {
+      const text = document.getElementById('vision-prompt-result').value;
+      if (!text) return;
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('咒語已複製！'))
+        .catch(() => { document.getElementById('vision-prompt-result').select(); document.execCommand('copy'); showToast('咒語已複製！'); });
+    };
+
+    document.getElementById('btn-use-vision-prompt').onclick = function () {
+      const text = document.getElementById('vision-prompt-result').value;
+      if (!text) return;
+      styleInput.value = text; switchTab('generator'); showToast('已帶入生成器！');
+    };
+
+    // ── 收藏儲存 ──
+    document.getElementById('btn-save-palette').onclick = function () {
+      try {
+        if (!currentColorPalette || Object.keys(currentColorPalette).length === 0) {
+          return showToast('❌ 錯誤：尚未產生配色，無法收藏！', true);
+        }
+        const ts = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+        const name = (currentPrompt || 'AI配色').slice(0, 12) + ' ' + ts;
+        savedPalettes.push({ id: Date.now().toString(), name, prompt: currentPrompt, colors: currentColorPalette });
+        renderPalettes();
+        parent.postMessage({ pluginMessage: { type: 'SAVE_PALETTES', palettes: savedPalettes } }, '*');
+        showToast('⭐ 已加入收藏：' + name);
+        this.style.display = 'none';
+      } catch (err) {
+        showToast('❌ 收藏失敗：' + err.message, true);
+        console.error(err);
+      }
+    };
+
+    document.getElementById('btn-save-custom').onclick = function () {
+      try {
+        const theme = getThemeFromUI();
+        if (!theme || Object.keys(theme).length === 0) {
+          return showToast('❌ 錯誤：無法讀取面板色彩！', true);
+        }
+        const ts = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+        const name = '手動配色 ' + ts;
+        savedPalettes.push({ id: Date.now().toString(), name, prompt: '手動自訂', colors: theme });
+        renderPalettes();
+        parent.postMessage({ pluginMessage: { type: 'SAVE_PALETTES', palettes: savedPalettes } }, '*');
+        showToast('⭐ 已加入收藏：' + name);
+        this.style.display = 'none';
+      } catch (err) {
+        showToast('❌ 收藏失敗：' + err.message, true);
+        console.error(err);
+      }
+    };
+  </script>
+</body>
+
+</html>

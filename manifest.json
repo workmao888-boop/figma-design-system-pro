@@ -1,0 +1,10 @@
+{
+  "name": "一鍵改風格 - Design System 版",
+  "id": "ai-style-plugin-998877",
+  "api": "1.0.0",
+  "editorType": [
+    "figma"
+  ],
+  "main": "code.js",
+  "ui": "ui.html"
+}
